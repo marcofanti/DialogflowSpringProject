@@ -269,7 +269,7 @@ public class DialogFlowController {
 				log.debug("assistantId is " + assistantId);
 
 				CreateSessionOptions options = new CreateSessionOptions.Builder(assistantId).build();
-				SessionResponse sessionResponse = HelloWorldApplication.assistant.createSession(options).execute()
+				SessionResponse sessionResponse = DialogFlowProxy.assistant.createSession(options).execute()
 						.getResult();
 
 				log.info("returning " + sessionResponse.toString());
@@ -394,7 +394,7 @@ public class DialogFlowController {
 		MessageOptions options = new MessageOptions.Builder("b7d8c8fe-0e39-4fd5-bfc0-e9b22868c1cb",
 				currentMessage.getSessionID()).input(input).build();
 
-		MessageResponse messageResponse = HelloWorldApplication.assistant.message(options).execute().getResult();
+		MessageResponse messageResponse = DialogFlowProxy.assistant.message(options).execute().getResult();
 
 		System.out.println(messageResponse);
 
