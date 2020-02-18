@@ -12,7 +12,7 @@ public class DialogFlowProxy {
 	public static Assistant assistant = null;
 
 	public static void main(String[] args) {
-		IamAuthenticator authenticator = new IamAuthenticator("vBmsgWv2Sz6UB8j94T_ii8sRilf5WiXDBsjgKRhLGEuz");
+		IamAuthenticator authenticator = new IamAuthenticator("UPr_KF2umwUR7h9e3IokD1hG_flpD8cp5NgrLmDGs88A");
 		assistant = new Assistant("2019-02-28", authenticator);
 //		assistant.setServiceUrl("http://localhost:9999/assistant/api");
 		assistant.setServiceUrl("https://gateway.watsonplatform.net/assistant/api");

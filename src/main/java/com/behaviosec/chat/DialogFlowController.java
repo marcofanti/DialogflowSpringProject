@@ -38,6 +38,7 @@ import com.behaviosec.isdk.client.APICall;
 import com.behaviosec.isdk.client.Client;
 import com.behaviosec.isdk.client.ClientConfiguration;
 import com.behaviosec.isdk.config.BehavioSecException;
+import com.behaviosec.isdk.config.Constants;
 import com.behaviosec.isdk.entities.Report;
 import com.behaviosec.isdk.entities.Response;
 import com.behaviosec.isdk.evaluators.BooleanEvaluator;
@@ -73,16 +74,29 @@ public class DialogFlowController {
 	private static boolean isDialogFlow = false;
     private String projectId = "banking-dggfcs";
     private String languageCode = "en";
+    
+    private static final String THIRD_PARTY_APY_PROTOCOL = "http";
+    private static final String THIRD_PARTY_APY_HOST = "localhost";
+    private static final int THIRD_PARTY_APY_PORT = 9090;
+    private static final String IP = "192.168.7.165";
+    private static final String user = "marcofanti3@behaviosec.com";
+    private static final String userAgent = 
+    		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36";
 
+           //Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36
 	@SuppressWarnings("deprecation")
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public String proxyGet(HttpMethod method, HttpServletRequest request, HttpResponse response)
 			throws URISyntaxException {
-		URI thirdPartyApi = new URI("http", null, "localhost", 9090, request.getRequestURI(), request.getQueryString(),
+		URI thirdPartyApi = new URI(THIRD_PARTY_APY_PROTOCOL, null, THIRD_PARTY_APY_HOST, THIRD_PARTY_APY_PORT, request.getRequestURI(), request.getQueryString(),
 				null);
 
-		return proxyPost(method, request, response, thirdPartyApi);
+		log.debug("Get URI = " + request.getRequestURI());
+		String result = proxyPost(method, request, response, thirdPartyApi);
+		log.debug("Result = " + result);
+		return result;
+//		return proxyPost(method, request, response, thirdPartyApi);
 	}
 
 	private StringBuilder getBody(HttpServletRequest request) {
@@ -195,17 +209,26 @@ public class DialogFlowController {
 
 		Message thisMessage = parseMessage(body.toString(), new Message());
 
-		if (!"{\"input\":{\"message_type\":\"text\",\"text\":\"mfanti@behaviosec.com\"}}"
-				.equals(thisMessage.getMessage())
-				&& thisMessage.getMessage().length() != "{\"input\":{\"message_type\":\"text\",\"text\":\"123456\"}}"
-						.length()) {
+		String thisMessageStringMessage = thisMessage.getMessage();
+		
+		if (!user.equals(thisMessageStringMessage)) {
+			
+			log.debug(thisMessageStringMessage +  "!= ");
+			log.debug(user);
+			if (thisMessageStringMessage.length() != "123456".length()) {
+				
+				log.debug(thisMessageStringMessage.length() +  "!= ");
+				log.debug("123456".length() + "");
+
 			return "{\"output\":{\"generic\":[{\"response_type\":\"text\",\"text\":\"Sorry Marco, I still cannot verify you. "
 					+ "Please enter your google authenticator 6 digit number.\"}],\"intents\":[{\"intent\":\"General_Conversation-Greetings\",\"confidence\":0.96069655418396}],\"entities\":[]}}";
+		
+			}
 		}
-
+		
 		if (thisMessage.getBdata() != null && thisMessage.getBdata().length() > 0) {
-			Report r = getReport(thisMessage.getBdata(), "mfanti@behaviosec.com",
-					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36",
+			Report r = getReport(thisMessage.getBdata(), user,
+					userAgent,
 					"127.0.0.1", thisMessage.getSessionID());
 			if (r == null || r.getScore() < 80 || r.getConfidence() < 50 || r.getRisk() > maxRisk || r.isTabAnomaly()) {
 				return "{\"output\":{\"generic\":[{\"response_type\":\"text\",\"text\":\"Sorry Marco, I still cannot verify you. "
@@ -238,8 +261,8 @@ public class DialogFlowController {
 
 		if (currentMessage.getAuthorizedBefore() == -1 && !requestURI.endsWith("/sessions")) {
 			StringBuilder body = getBody(request);
-
-			return validateUser(body.toString());
+			String bodyString = body.toString();
+			return validateUser(bodyString);
 		}
 
 		StringBuilder body = getBody(request);
@@ -251,9 +274,8 @@ public class DialogFlowController {
 			if (thisMessage.getBdata() != null && thisMessage.getBdata().length() > 0) {
 				if ("{\"input\":{\"message_type\":\"text\",\"text\":\"I want to make a credit card payment\"}}"
 						.equals(currentMessage.getMessage())) {
-					currentMessage.setReport(getReport(thisMessage.getBdata(), "mfanti@behaviosec.com",
-							"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36",
-							"127.0.0.1", thisMessage.getSessionID()));
+					currentMessage.setReport(getReport(thisMessage.getBdata(), user,
+							userAgent, "127.0.0.1", thisMessage.getSessionID()));
 				}
 			}
 		} else if (requestURI.endsWith("/sessions")) {
@@ -261,7 +283,9 @@ public class DialogFlowController {
 				UUID uuid = UUID.randomUUID();
 				String sessionId = uuid.toString();
 				currentMessage = new Message(sessionId);
-				return "{\r\n" + "  \"session_id\": \"" + sessionId + "\"\r\n" + "}";
+				String returnMessage = "{\r\n" + "  \"session_id\": \"" + sessionId + "\"\r\n" + "}";
+				log.debug("Returning " + returnMessage);
+				return returnMessage;
 			}
 			try {
 				String assistantId = requestURI.substring("/assistant/api/v2/assistants/".length(),
@@ -350,9 +374,12 @@ public class DialogFlowController {
 			QueryResult queryResult = null;
 			
 			try {
-				if (currentMessage.getMessage() == null || currentMessage.getMessage().trim().length()==0) {
+				if (currentMessage.getMessage() == null || currentMessage.getMessage().trim().length() == 0) {
+					log.debug("Returning defaultString\n" + defaultString);
 					return defaultString;
 				}
+				
+				
 				queryResult = detectIntentTexts(projectId, currentMessage.getMessage(), currentMessage.getSessionID(), languageCode);
 				log.debug("====================");
 				log.debug("Query Text: '%s'\n", queryResult.getQueryText());
@@ -380,6 +407,42 @@ public class DialogFlowController {
 						"  }\r\n" + 
 						"}";
 				log.debug("fulfillmentTextJson " + fulfillmentTextJson);
+				
+				Report r = null; //currentMessage.getReport();
+				if (r == null) {
+					if (thisMessage.getBdata() != null && thisMessage.getBdata().length() > 0) {
+						currentMessage.setReport(getReport(thisMessage.getBdata(), user,
+								userAgent, "127.0.0.1", thisMessage.getSessionID()));
+						r = currentMessage.getReport();
+					}
+				}
+				if (r != null && r.toString().indexOf("diDesc:") > 0) {
+					int st = r.toString().indexOf("diDesc:");
+					String diDesc = r.toString().substring(st);
+					log.debug(diDesc);
+					if (r.toString().substring(st).contains(", 3") || r.toString().substring(st).indexOf("[3") > 0) {
+						currentMessage.setAuthorizedBefore(-1);
+						currentMessage.setResponse(fulfillmentTextJson);
+						return "{\"output\":{\"generic\":[{\"response_type\":\"text\",\"text\":\"Marco, I cannot verify you (cut and paste detected). "
+								+ "Please enter your email address or username.\"}],\"intents\":[{\"intent\":\"General_Conversation-Greetings\",\"confidence\":0.96069655418396}],\"entities\":[]}}";
+					}
+					if (r.toString().substring(st).contains(", 0") || r.toString().substring(st).indexOf("[0") > 0) {
+						currentMessage.setAuthorizedBefore(-1);
+						currentMessage.setResponse(fulfillmentTextJson);
+						return "{\"output\":{\"generic\":[{\"response_type\":\"text\",\"text\":\"Marco, I cannot verify you (no input detected). "
+								+ "Please enter your email address or username.\"}],\"intents\":[{\"intent\":\"General_Conversation-Greetings\",\"confidence\":0.96069655418396}],\"entities\":[]}}";
+					}
+				} else if (r == null || r.getScore() < 80 || r.getConfidence() < 50 || r.getRisk() > maxRisk
+						|| currentMessage.getMessage().equals(
+								"{\"input\":{\"message_type\":\"text\",\"text\":\"I want to make a credit card payment\"}}")) {
+					currentMessage.setAuthorizedBefore(-1);
+					currentMessage.setResponse(fulfillmentTextJson);
+					return "{\"output\":{\"generic\":[{\"response_type\":\"text\",\"text\":\"Marco, I cannot verify you. "
+							+ "Please enter your email address or username.\"}],\"intents\":[{\"intent\":\"General_Conversation-Greetings\",\"confidence\":0.96069655418396}],\"entities\":[]}}";
+				}
+				
+
+				
 				return fulfillmentTextJson;
 				
 			} catch (Exception e) {
@@ -409,8 +472,8 @@ public class DialogFlowController {
 				Report r = currentMessage.getReport();
 				if (r == null) {
 					if (thisMessage.getBdata() != null && thisMessage.getBdata().length() > 0) {
-						currentMessage.setReport(getReport(thisMessage.getBdata(), "mfanti@behaviosec.com",
-								"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36",
+						currentMessage.setReport(getReport(thisMessage.getBdata(), user,
+								userAgent,
 								"127.0.0.1", thisMessage.getSessionID()));
 						r = currentMessage.getReport();
 					}
@@ -456,7 +519,7 @@ public class DialogFlowController {
 
 	}
 
-	public Report getReport(String bdata, String username, String useragent, String ip, String uuid) {
+	public Report getReport(String bdata, String username, String useragent, String clientIp, String uuid) {
 		String url = "https://partner.behaviosec.com/";
 		String tenantID = "THyek3Nd9qx6SbB2";
 
@@ -468,8 +531,19 @@ public class DialogFlowController {
 		Client clientWithTenantId = new Client(ccWithTenantId);
 
 		APICall callHealth = APICall.healthBuilder().build();
-		APICall callReport = APICall.reportBuilder().username(username).userIP(ip).userAgent(useragent)
-				.timingData(bdata).sessionId(uuid).build();
+		
+        APICall callReport = APICall.reportBuilder()
+//                .tenantId(tenantID)
+                .username(username)
+                .userIP(clientIp)
+                .userAgent(useragent)
+                .timingData(bdata)
+                .sessionId(uuid)
+                .operatorFlags(Constants.FINALIZE_DIRECTLY)
+                .build();
+
+//		APICall callReport = APICall.reportBuilder().username(username).userIP(ip).userAgent(useragent)
+//				.timingData(bdata).sessionId(uuid).build();
 
 		try {
 			Response h = client.makeCall(callHealth);
