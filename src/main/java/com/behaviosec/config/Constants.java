@@ -1,13 +1,9 @@
 package com.behaviosec.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * Class for constants through the application
  */
 public class Constants {
-	//@Autowired
-	//public AppServiceConfig appServiceConfig;
 
 	//Default score settings
     public static final int SCORE_MULTIPLIER = 100;
@@ -85,4 +81,39 @@ public class Constants {
     //Operator flags
     public final static int FINALIZE_DIRECTLY = 512;
     public final static int FLAG_GENERATE_TIMESTAMP = 2;
+    
+	public final static String INITIAL_CHAT_RETURN_STRING_1 = "{\r\n" + "  \"output\": {\r\n" + "    \"generic\": [\r\n"
+			+ "      {\r\n" + "        \"response_type\": \"text\",\r\n" + "        \"text\": \"Hello ";
+
+	public final static String INITIAL_CHAT_RETURN_STRING_2 = ", I am the ACME bank's Virtual Agent.\"\r\n"
+			+ "      },\r\n" + "      {\r\n" + "        \"response_type\": \"option\",\r\n"
+			+ "        \"title\": \"I can help you with a number of banking tasks:\",\r\n"
+			+ "        \"options\": [\r\n" + "          {\r\n"
+			+ "            \"label\": \"Making a credit card payment\",\r\n" + "            \"value\": {\r\n"
+			+ "              \"input\": {\r\n"
+			+ "                \"text\": \"I want to make a credit card payment\"\r\n" + "              }\r\n"
+			+ "            }\r\n" + "          },\r\n" + "          {\r\n"
+			+ "            \"label\": \"Transfer money\",\r\n" + "            \"value\": {\r\n"
+			+ "              \"input\": {\r\n" + "                \"text\": \"I want transfer money\"\r\n"
+			+ "              }\r\n" + "            }\r\n" + "          },\r\n" + "          {\r\n"
+			+ "            \"label\": \"Check balance\",\r\n" + "            \"value\": {\r\n"
+			+ "              \"input\": {\r\n" + "                \"text\": \"I want to check my balance\"\r\n"
+			+ "              }\r\n" + "            }\r\n" + "          },\r\n" + "          {\r\n"
+			+ "            \"label\": \"Open an account\",\r\n" + "            \"value\": {\r\n"
+			+ "              \"input\": {\r\n" + "                \"text\": \"I want to open an account\"\r\n"
+			+ "              }\r\n" + "            }\r\n" + "          }\r\n" + "        ]\r\n" + "      }\r\n"
+			+ "    ],\r\n" + "    \"intents\": [],\r\n" + "    \"entities\": []\r\n" + "  }\r\n" + "}\r\n";
+	
+	public static final String VERIFY_MESSAGE_1 = ", I cannot verify you. Please enter your email address or username.";
+	public static final String VERIFY_MESSAGE_2 = ", I cannot verify you (no input detected). Please enter your email address or username.";
+	public static final String VERIFY_MESSAGE_3 = ", I cannot verify you (cut and paste detected). Please enter your email address or username.";
+	public static final String VERIFY_MESSAGE_4 = ", I still cannot verify you. Please enter your email address or username, or your google authenticator code.";
+	
+	public static final String FEEDBACK_MODE_BOTH = "both";
+	public static final String FEEDBACK_MODE_NONE = "none";
+	public static final String FEEDBACK_MODE_SCORE = "score";
+	public static final String FEEDBACK_MODE_PRIVILEGE = "privilege";
+
+	public static final String TRAINING_MODE_TRUE = "true";
+	public static final String TRAINING_MODE_FALSE = "false";
 }
