@@ -113,6 +113,7 @@ public class Constants {
 	public static final String FEEDBACK_MODE_NONE = "none";
 	public static final String FEEDBACK_MODE_SCORE = "score";
 	public static final String FEEDBACK_MODE_PRIVILEGE = "privilege";
+	public static final String FEEDBACK_MODE_ALL = "all";
 
 	public static final String TRAINING_MODE_TRUE = "true";
 	public static final String TRAINING_MODE_FALSE = "false";

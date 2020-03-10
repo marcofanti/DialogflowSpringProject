@@ -11,11 +11,13 @@ public class JsonUtils {
 		String score = "";
 		
 		// Check if we need to include the privilege
-		if (feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_BOTH) || feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_PRIVILEGE)) {
+		if (feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_BOTH) || feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_PRIVILEGE) ||
+				feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_ALL)) {
 			score = risk.toString() + ":";
 		}
 				
-		if (feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_BOTH) || feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_SCORE)) {
+		if (feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_BOTH) || feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_SCORE) ||
+				feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_ALL)) {
 			if (r!= null) {
 				double scoreDouble = r.getScore();
 				double riskDouble = r.getRisk();
@@ -28,6 +30,15 @@ public class JsonUtils {
 				score += " invalid credentials or no report - ";
 			}
 		}
+		
+		if (feedbackMode.equalsIgnoreCase(Constants.FEEDBACK_MODE_ALL)) {
+			if (r.isTrained()) {
+				score += " trained: ";
+			} else {
+				score += " not trained: ";
+			}
+		}
+
 		
 		String fulfillmentTextJson = "{\r\n" + 
 				"  \"output\": {\r\n" + 

@@ -70,6 +70,11 @@ public class DialogFlowController {
         low, medium, high; 
     } 
     
+    public enum trainingMode  
+    { 
+        none, score, both, all; 
+    } 
+    
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public String proxyGet(HttpMethod method, HttpServletRequest request, HttpResponse response)
@@ -124,18 +129,7 @@ public class DialogFlowController {
 		StringBuilder body = getBody(request);
 
 		currentMessage.parseInput(body.toString());
-/*
-		if (requestURI.startsWith("/getReport") || requestURI.endsWith("/message")) {
 
-			if (currentMessage.getBdata() != null && currentMessage.getBdata().length() > 0) {
-				if ("{\"input\":{\"message_type\":\"text\",\"text\":\"I want to make a credit card payment\"}}"
-						.equals(currentMessage.getMessage())) {
-					currentMessage.setReport(getReport(currentMessage.getBdata(), currentMessage.getEmail(),
-							ParseUtils.parseTimingData(currentMessage.getBdata(), userAgent), "127.0.0.1", currentMessage.getSessionID()));
-				}
-			}
-		} 
-*/
 		String defaultString = com.behaviosec.config.Constants.INITIAL_CHAT_RETURN_STRING_1 + currentMessage.getName() + 
 				com.behaviosec.config.Constants.INITIAL_CHAT_RETURN_STRING_2;
 
@@ -211,6 +205,7 @@ public class DialogFlowController {
 				}
 			}
 			log.debug("intent risk: " + intentRisk);
+			log.debug("training mode: " + currentMessage.getTrainingMode());
 			
 			if (currentMessage.getTrainingMode().equals(com.behaviosec.config.Constants.TRAINING_MODE_FALSE)) {
 				if ((intentRisk == risk.medium || intentRisk == risk.high) && (r != null && r.toString().indexOf("diDesc:") > 0)) {
